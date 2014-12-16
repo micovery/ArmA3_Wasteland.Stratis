@@ -209,7 +209,7 @@ player createDiaryRecord ["changelog",
 [
 "0.9b",
 "
-<br/> [Initial release] - Welcome to stratis!
+<br/> [Initial release] - Welcome to Stratis!
 "
 ]];
 

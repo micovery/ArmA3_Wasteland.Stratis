@@ -30,12 +30,17 @@ A3W_startingMoney = 100;           // Amount of money that players start with
 A3W_unlimitedStamina = 1;          // Allow unlimited sprinting, jumping, etc. (0 = no, 1 = yes) - this also removes energy drinks from the mission
 A3W_bleedingTime = 60;             // Time in seconds for which to allow revive after a critical injury (minimum 10 seconds)
 
+A3W_healthTime = 60*5;             //seconds till death
+A3W_hungerTime = 60*60;            //seconds till starving
+A3W_thirstTime = 60*50;            //seconds till dehydrated
+
 // Persistence settings
 A3W_playerSaving = 1;              // Save player data like position, health, inventory, etc. (0 = no, 1 = yes)
 A3W_moneySaving = 1;               // If playerSaving = 1, save player money amount (0 = no, 1 = yes)
 A3W_combatAbortDelay = 60;         // If playerSaving = 1, delay in seconds for which to disable abort and respawn buttons after firing or being shot (0 = none)
 A3W_purchasedVehicleSaving = 1;    // Save vehicles purchased at vehicle stores between server restarts (0 = no, 1 = yes)
 A3W_missionVehicleSaving = 1;      // Save vehicles captured from missions between server restarts (0 = no, 1 = yes)
+A3W_townVehicleSaving = 0;         // Save vehicles captured from missions between server restarts (0 = no, 1 = yes)
 A3W_baseSaving = 1;                // Save locked base parts between server restarts (0 = no, 1 = yes)
 A3W_boxSaving = 1;                 // Save locked weapon crates and their contents between server restarts (0 = no, 1 = yes)
 A3W_staticWeaponSaving = 1;        // Save locked static weapons and their magazines between server restarts (0 = no, 1 = yes)
@@ -47,6 +52,21 @@ A3W_vehicleLifetime = 0;           // Maximum lifetime in hours for saved vehicl
 A3W_vehicleMaxUnusedTime = 2*24;   // Maximum parking time in hours after which unused saved vehicles will be marked for deletion (0 = no time limit)
 PDB_PlayerFileID = "A3W_";         // Player savefile prefix (change this in case you run multiple servers from the same folder)
 PDB_ObjectFileID = "A3W_";         // Object savefile prefix (change this in case you run multiple servers from the same folder)
+PDB_MessagesFileID = "A3W_";       // Messages savefile prefix (change this in case you run multiple servers from the same folder)
+PDB_AdminLogFileID = "A3W_";       // Admin log savefile prefix (change this in case you run multiple servers from the same folder)
+PDB_HackerLogFileID = "A3W_";      // Hacker log savefile prefix (change this in case you run multiple servers from the same folder)
+PDB_PlayersListFileID = "A3W_";     // PlayerList savefile prefix (change this in case you run multiple servers from the same folder)
+
+
+A3W_vehicle_saveInterval = 300;     // Number of seconds between vehicle saves
+A3W_object_saveInterval = 300;      // Number of seconds between object saves
+A3W_player_saveInterval = 300;      // Number of seconds between player saves
+A3W_playersList_saveInterval = 120; // Number of seconds between player list saves
+
+                                   // List of classes for vehicles that are saveable
+                                   // You can add/remove classes from this list for fine grained control which kind of vehicles can be saved
+A3W_saveable_vehicles_list = ["Helicopter", "Plane", "Ship_F", "Car", "Motorcycle", "Tank"];
+A3W_locked_vehicles_list = [];     // List of class names for vehicles that should be automatically locked unpon restore
 
 // Spawning settings
 A3W_serverSpawning = 1;            // Vehicle, object, and loot spawning (0 = no, 1 = yes)
