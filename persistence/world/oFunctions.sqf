@@ -10,7 +10,13 @@ call compile preProcessFileLineNumbers "persistence\lib\shFunctions.sqf";
 
 #include "macro.h";
 
+o_loadingOrderArray = ["Building","StaticWeapon","ReammoBox_F", "All"];
 
+diag_log format ["===== Loading order: ====="];
+{
+  diag_log format ["%1: %2", _forEachIndex+1,_x];
+} forEach o_loadingOrderArray;
+diag_log format ["=========================="];
 
 o_hasInventory = {
   ARGVX2(0,_arg);
@@ -41,7 +47,6 @@ o_isSaveable = {
 
   init(_class, typeOf _obj);
 
-  if (!(alive _obj)) exitWith {false};
   if ([_obj] call sh_isSaveableVehicle) exitWith {false}; //already being saved as a vehicle, don't save it
   if ([_obj] call o_isInSaveList) exitWith {true}; //not sure what this "saveList" thing is ...
 
@@ -341,6 +346,7 @@ o_addSaveObject = {
   
 
   if (not([_obj] call o_isSaveable)) exitWith {};
+  if (!(alive _obj)) exitWith {};
 
   //diag_log format["will save %1", _obj];
   def(_class);
@@ -521,6 +527,8 @@ o_trackedObjectsListCleanup = {
 };
 
 
+
+
 tracked_objects_list = [];
 
 o_getTrackedObjectIndex = {
@@ -530,9 +538,8 @@ o_getTrackedObjectIndex = {
   (tracked_objects_list find _obj)
 };
 
-//event handlers for object tracking, and untracking
-"trackObject" addPublicVariableEventHandler {
-  private["_index","_object"];
+o_trackObject = {
+ private["_index","_object"];
   _object = _this select 1;
   _index = [OR(_object,nil)] call o_getTrackedObjectIndex;
   if (_index >= 0) exitWith {};
@@ -541,8 +548,10 @@ o_getTrackedObjectIndex = {
   tracked_objects_list pushBack _object;
 };
 
+//event handlers for object tracking, and untracking
+"trackObject" addPublicVariableEventHandler { _this call o_trackObject; };
 
-"untrackObject" addPublicVariableEventHandler {
+o_untrackObject = {
   private["_index","_object"];
   _object = _this select 1;
   _index = [OR(_object,nil)] call o_getTrackedObjectIndex;
@@ -550,6 +559,28 @@ o_getTrackedObjectIndex = {
 
   //diag_log format["%1 is being removed from the tracked list", _object];
   tracked_objects_list deleteAt _index;
+};
+
+"untrackObject" addPublicVariableEventHandler { _this call o_untrackObject; };
+
+fn_manualObjectSave = {
+  ARGVX3(0,_netId,"");
+
+  def(_object);
+  _object = objectFromNetId _netId;
+  if (!isOBJECT(_object)) exitWith {};
+
+  [_object] call o_trackObject;
+};
+
+fn_manualObjectDelete = {
+  ARGVX3(0,_netId,"");
+
+  def(_object);
+  _object = objectFromNetId _netId;
+  if (!isOBJECT(_object)) exitWith {};
+
+  [_object] call o_untrackObject;
 };
 
 o_saveLoop = {
@@ -606,14 +637,55 @@ o_loadObjects = {
   
   def(_objects);
   _objects = [_scope] call stats_get;
+
+  init(_oIds,[]);
   
   //nothing to load
-  if (!isARRAY(_objects)) exitWith {};
+  if (!isARRAY(_objects)) exitWith {
+    diag_log format["WARNING: No objects loaded from the database"];
+    _oIds
+  };
 
   diag_log format["A3Wasteland - will restore %1 objects", count(_objects)];
-  { 
-    [_x] call o_restoreObject;
-  } forEach _objects;
+  def(_type);
+  def(_class);
+  def(_object_data);
+  init(_restored_objects,0);
+  init(_total_objects,(count(_objects)-1)); //-1 because the "Info" section is not an object
+
+  {
+    _type = _x;
+
+    {if (true) then {
+
+      if (!(isARRAY(_x))) exitWith {
+        diag_log format ["ERROR: o_loadObjects : _objects is not ARRAY. Sth is terribly wrong."];
+      };
+
+      if (!(isCODE((_x select 1)))) exitWith {
+        diag_log format ["ERROR: o_loadObjects : _objects select 1 is not CODE. Sth is terribly wrong."];
+      };
+
+      _object_data = call (_x select 1);
+      _class = [_object_data, "Class"] call sh_getValueFromPairs;
+      
+      //diag_log format ["_class: %1 || _type: %2", _class, _type];
+      if ((isNil "_class") || {not(_class isKindOf _type)}) exitWith {};
+
+      diag_log format ["Loading %1 type of %2", _class, _type];
+      _oIds pushBack (_x select 0);
+      [_x] call o_restoreObject;
+      _restored_objects = _restored_objects + 1;
+      _objects set [_forEachIndex, objNull]; //mark the object fro deletion once it's loaded
+
+    }} forEach _objects;
+    _objects = _objects - [objNull];
+  } forEach o_loadingOrderArray;
+  
+  diag_log format["A3Wasteland - Total database objects: %1 ", _total_objects];
+  diag_log format["A3Wasteland - Real restored objects: %1 ", _restored_objects];
+
+  (_oIds)
 };
 
 diag_log "oFunctions.sqf loading complete";

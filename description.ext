@@ -36,6 +36,7 @@ loadScreen = "mapConfig\Loading.jpg";
 #include "client\systems\ui_toolkit.hpp"
 #include "client\systems\common.hpp"
 #include "client\items\warchest\dialog.hpp"
+#include "client\items\atm\atm_gui.hpp"
 #include "client\actions\gui.hpp"
 #include "addons\far_revive\revive_gui.hpp"
 #include "client\systems\playerMenu\dialog\player_settings.hpp"
@@ -60,6 +61,16 @@ class RscTitles
 	#include "client\systems\hud\dialog\hud.hpp"
 	#include "client\systems\playerMenu\dialog\welcome.hpp"
 	#include "client\systems\scoreboard\score_gui.hpp"
+};
+
+class CfgDebriefing
+{  
+	class Reboot
+	{
+		title = "Rebooting";
+		subtitle = "Thank you for playing!";
+		description = "Server will save database and restart to increase performance. Please, give us some time :)";
+	};
 };
 
 class CfgFunctions

@@ -1,19 +1,15 @@
 // ******************************************************************************************
 // * This project is licensed under the GNU Affero GPL v3. Copyright © 2014 A3Wasteland.com *
 // ******************************************************************************************
-//	@file Name: openParachute.sqf
+//	@file Name: fn_forceOpenParachute.sqf
 //	@file Author: AgentRev
 
 if (!alive player) exitWith {};
 if (vehicle player != player) exitWith {};
 
+openParachuteTimestamp = diag_tickTime;
+
 private ["_wait", "_pos", "_para"];
-
-// some aircrafts blow up on contact with parachutes, so we have to make sure none's close
-waitUntil {sleep 0.1; {player distance _x < 10 max (sizeOf typeOf _x)} count (player nearEntities ["Helicopter_Base_F", 20]) == 0};
-
-if (!alive player) exitWith {};
-
 _wait = false;
 _pos = getPosATL player;
 
@@ -34,21 +30,27 @@ _para disableCollisionWith player;
 player moveInDriver _para;
 _para setVelocity [0,0,0];
 
-[_para, _wait] spawn
+[_para, _wait, diag_tickTime] spawn
 {
 	_para = _this select 0;
 	_wait = _this select 1;
+	_startTime = _this select 2;
+
+	if (vehicle player == _para && animationState player != "para_pilot") then
+	{
+		[player, "para_pilot"] call switchMoveGlobal;
+	};
 
 	if (_wait) then
 	{
-		sleep 4.25; // parachute deployment time
+		sleep (4.25 - (diag_tickTime - _startTime)); // parachute deployment time
 	}
 	else
 	{
-		sleep 0.5;
+		sleep (0.5 - (diag_tickTime - _startTime));
 	};
 
-	waitUntil {sleep 0.1; isTouchingGround _para || !alive _para};
+	waitUntil {isTouchingGround _para || !alive _para};
 
 	if (!isNull _para) then
 	{
